@@ -41,6 +41,17 @@ public class DriverController {
                 .body(ApiResponse.error(e.getMessage()));
         }
     }
+
+    @GetMapping("/{driverId}")
+    public ResponseEntity<ApiResponse<Driver>> getDriverById(@PathVariable Long driverId) {
+        try {
+            Driver driver = driverService.getDriverById(driverId);
+            return ResponseEntity.ok(ApiResponse.success("Driver retrieved successfully", driver));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.error(e.getMessage()));
+        }
+    }
     
     @PostMapping("/vehicles")
     public ResponseEntity<ApiResponse<Vehicle>> registerVehicle(
