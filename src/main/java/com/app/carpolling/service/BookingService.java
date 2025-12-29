@@ -3,6 +3,8 @@ package com.app.carpolling.service;
 import com.app.carpolling.dto.BookingRequest;
 import com.app.carpolling.dto.BookingResponse;
 import com.app.carpolling.entity.*;
+import com.app.carpolling.exception.BaseException;
+import com.app.carpolling.exception.ErrorCode;
 import com.app.carpolling.repository.BookingRepository;
 import com.app.carpolling.repository.RoutePointRepository;
 import com.app.carpolling.repository.TripSeatRepository;
@@ -32,28 +34,28 @@ public class BookingService {
         Trip trip = tripService.getTripById(request.getTripId());
         
         RoutePoint boardingPoint = routePointRepository.findById(request.getBoardingPointId())
-            .orElseThrow(() -> new RuntimeException("Boarding point not found"));
+            .orElseThrow(() -> new BaseException(ErrorCode.BOARDING_POINT_NOT_FOUND));
         
         RoutePoint dropPoint = routePointRepository.findById(request.getDropPointId())
-            .orElseThrow(() -> new RuntimeException("Drop point not found"));
+            .orElseThrow(() -> new BaseException(ErrorCode.DROP_POINT_NOT_FOUND));
         
         // Validate trip is scheduled
         if (trip.getStatus() != TripStatus.SCHEDULED) {
-            throw new RuntimeException("Trip is not available for booking");
+            throw new BaseException(ErrorCode.TRIP_NOT_AVAILABLE);
         }
         
         // Validate seats availability
         if (trip.getAvailableSeats() < request.getSeatNumbers().size()) {
-            throw new RuntimeException("Not enough seats available");
+            throw new BaseException(ErrorCode.NOT_ENOUGH_SEATS);
         }
         
         // Validate and reserve seats
         for (String seatNumber : request.getSeatNumbers()) {
             TripSeat seat = tripSeatRepository.findByTripIdAndSeatNumber(trip.getId(), seatNumber)
-                .orElseThrow(() -> new RuntimeException("Seat " + seatNumber + " not found"));
+                .orElseThrow(() -> new BaseException(ErrorCode.SEAT_NOT_FOUND, "Seat " + seatNumber + " not found"));
             
             if (!seat.getIsAvailable()) {
-                throw new RuntimeException("Seat " + seatNumber + " is already booked");
+                throw new BaseException(ErrorCode.SEAT_ALREADY_BOOKED, "Seat " + seatNumber + " is already booked");
             }
             
             // Reserve seat
@@ -96,7 +98,7 @@ public class BookingService {
     @Transactional
     public Booking confirmBooking(Long bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
-            .orElseThrow(() -> new RuntimeException("Booking not found"));
+            .orElseThrow(() -> new BaseException(ErrorCode.BOOKING_NOT_FOUND));
         
         booking.setStatus(BookingStatus.CONFIRMED);
         return bookingRepository.save(booking);
@@ -105,17 +107,17 @@ public class BookingService {
     @Transactional
     public Booking cancelBooking(Long bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
-            .orElseThrow(() -> new RuntimeException("Booking not found"));
+            .orElseThrow(() -> new BaseException(ErrorCode.BOOKING_NOT_FOUND));
         
         if (booking.getStatus() == BookingStatus.CANCELLED) {
-            throw new RuntimeException("Booking is already cancelled");
+            throw new BaseException(ErrorCode.BOOKING_ALREADY_CANCELLED);
         }
         
         // Release seats
         for (String seatNumber : booking.getSeatNumbers()) {
             TripSeat seat = tripSeatRepository.findByTripIdAndSeatNumber(
                 booking.getTrip().getId(), seatNumber
-            ).orElseThrow(() -> new RuntimeException("Seat not found"));
+            ).orElseThrow(() -> new BaseException(ErrorCode.SEAT_NOT_FOUND));
             
             seat.setIsAvailable(true);
             tripSeatRepository.save(seat);
@@ -141,7 +143,7 @@ public class BookingService {
     @Transactional(readOnly = true)
     public BookingResponse getBookingByReference(String bookingReference) {
         Booking booking = bookingRepository.findByBookingReference(bookingReference)
-            .orElseThrow(() -> new RuntimeException("Booking not found"));
+            .orElseThrow(() -> new BaseException(ErrorCode.BOOKING_NOT_FOUND));
         return convertToBookingResponse(booking);
     }
     
@@ -173,7 +175,7 @@ public class BookingService {
     @Transactional(readOnly = true)
     public Booking getBookingById(Long bookingId) {
         return bookingRepository.findById(bookingId)
-            .orElseThrow(() -> new RuntimeException("Booking not found"));
+            .orElseThrow(() -> new BaseException(ErrorCode.BOOKING_NOT_FOUND));
     }
 }
 

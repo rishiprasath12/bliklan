@@ -6,6 +6,8 @@ import com.app.carpolling.dto.RoutePointDto;
 import com.app.carpolling.entity.Driver;
 import com.app.carpolling.entity.Route;
 import com.app.carpolling.entity.RoutePoint;
+import com.app.carpolling.exception.BaseException;
+import com.app.carpolling.exception.ErrorCode;
 import com.app.carpolling.repository.RoutePointRepository;
 import com.app.carpolling.repository.RouteRepository;
 import lombok.RequiredArgsConstructor;
@@ -68,7 +70,7 @@ public class RouteService {
     @Transactional(readOnly = true)
     public Route getRouteById(Long routeId) {
         return routeRepository.findById(routeId)
-            .orElseThrow(() -> new RuntimeException("Route not found"));
+            .orElseThrow(() -> new BaseException(ErrorCode.ROUTE_NOT_FOUND));
     }
     
     @Transactional(readOnly = true)

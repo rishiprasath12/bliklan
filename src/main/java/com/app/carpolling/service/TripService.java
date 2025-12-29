@@ -5,6 +5,8 @@ import com.app.carpolling.dto.TripCreationRequest;
 import com.app.carpolling.dto.TripSearchRequest;
 import com.app.carpolling.dto.TripSearchResponse;
 import com.app.carpolling.entity.*;
+import com.app.carpolling.exception.BaseException;
+import com.app.carpolling.exception.ErrorCode;
 import com.app.carpolling.repository.RoutePointRepository;
 import com.app.carpolling.repository.TripRepository;
 import com.app.carpolling.repository.TripSeatRepository;
@@ -38,7 +40,7 @@ public class TripService {
         
         // Validate driver owns the vehicle
         if (!vehicle.getDriver().getId().equals(driver.getId())) {
-            throw new RuntimeException("Vehicle does not belong to this driver");
+            throw new BaseException(ErrorCode.VEHICLE_NOT_BELONGS_TO_DRIVER);
         }
         
         // Calculate estimated arrival time
@@ -136,12 +138,12 @@ public class TripService {
         RoutePoint boarding = routePoints.stream()
             .filter(rp -> rp.getPointName().equals(boardingPoint))
             .findFirst()
-            .orElseThrow(() -> new RuntimeException("Boarding point not found"));
+            .orElseThrow(() -> new BaseException(ErrorCode.BOARDING_POINT_NOT_FOUND));
         
         RoutePoint drop = routePoints.stream()
             .filter(rp -> rp.getPointName().equals(dropPoint))
             .findFirst()
-            .orElseThrow(() -> new RuntimeException("Drop point not found"));
+            .orElseThrow(() -> new BaseException(ErrorCode.DROP_POINT_NOT_FOUND));
         
         double distance = (drop.getDistanceFromStart() - boarding.getDistanceFromStart()) / 1000.0;
         int duration = drop.getTimeFromStart() - boarding.getTimeFromStart();
@@ -175,7 +177,7 @@ public class TripService {
     @Transactional(readOnly = true)
     public SeatAvailabilityResponse getSeatAvailability(Long tripId) {
         Trip trip = tripRepository.findById(tripId)
-            .orElseThrow(() -> new RuntimeException("Trip not found"));
+            .orElseThrow(() -> new BaseException(ErrorCode.TRIP_NOT_FOUND));
         
         List<TripSeat> seats = tripSeatRepository.findByTripId(tripId);
         
@@ -199,7 +201,7 @@ public class TripService {
     @Transactional(readOnly = true)
     public Trip getTripById(Long tripId) {
         return tripRepository.findById(tripId)
-            .orElseThrow(() -> new RuntimeException("Trip not found"));
+            .orElseThrow(() -> new BaseException(ErrorCode.TRIP_NOT_FOUND));
     }
 }
 

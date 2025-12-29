@@ -5,6 +5,8 @@ import com.app.carpolling.entity.Booking;
 import com.app.carpolling.entity.BookingStatus;
 import com.app.carpolling.entity.Payment;
 import com.app.carpolling.entity.PaymentStatus;
+import com.app.carpolling.exception.BaseException;
+import com.app.carpolling.exception.ErrorCode;
 import com.app.carpolling.repository.PaymentRepository;
 import com.razorpay.Order;
 import com.razorpay.RazorpayClient;
@@ -35,12 +37,12 @@ public class PaymentService {
         
         // Validate booking is pending
         if (booking.getStatus() != BookingStatus.PENDING) {
-            throw new RuntimeException("Booking is not in pending state");
+            throw new BaseException(ErrorCode.BOOKING_NOT_PENDING);
         }
         
         // Check if payment already exists
         if (paymentRepository.findByBookingId(booking.getId()).isPresent()) {
-            throw new RuntimeException("Payment already exists for this booking");
+            throw new BaseException(ErrorCode.PAYMENT_ALREADY_EXISTS);
         }
 
         RazorpayClient razorpay = new RazorpayClient(KEY_ID, KEY_SECRET);
@@ -98,13 +100,13 @@ public class PaymentService {
     @Transactional(readOnly = true)
     public Payment getPaymentByBookingId(Long bookingId) {
         return paymentRepository.findByBookingId(bookingId)
-            .orElseThrow(() -> new RuntimeException("Payment not found for this booking"));
+            .orElseThrow(() -> new BaseException(ErrorCode.PAYMENT_NOT_FOUND, "Payment not found for this booking"));
     }
     
     @Transactional(readOnly = true)
     public Payment getPaymentByTransactionId(String transactionId) {
         return paymentRepository.findByTransactionId(transactionId)
-            .orElseThrow(() -> new RuntimeException("Payment not found"));
+            .orElseThrow(() -> new BaseException(ErrorCode.PAYMENT_NOT_FOUND));
     }
 }
 

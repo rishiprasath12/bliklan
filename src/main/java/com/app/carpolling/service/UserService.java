@@ -2,8 +2,14 @@ package com.app.carpolling.service;
 
 import com.app.carpolling.dto.AuthResponse;
 import com.app.carpolling.dto.LoginRequest;
+import com.app.carpolling.dto.UserDetailsResponse;
 import com.app.carpolling.dto.UserRegistrationRequest;
+import com.app.carpolling.entity.Driver;
 import com.app.carpolling.entity.User;
+import com.app.carpolling.entity.UserRole;
+import com.app.carpolling.exception.BaseException;
+import com.app.carpolling.exception.ErrorCode;
+import com.app.carpolling.repository.DriverRepository;
 import com.app.carpolling.repository.UserRepository;
 import com.app.carpolling.utils.JWTUtils;
 import lombok.RequiredArgsConstructor;
@@ -17,18 +23,19 @@ public class UserService {
     
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final DriverRepository driverRepository;
     private final JWTUtils jwtUtils;
     
     @Transactional
     public AuthResponse registerUser(UserRegistrationRequest request) {
         if (userRepository.existsByPhone(request.getPhone())) {
-            throw new RuntimeException("Phone already registered");
+            throw new BaseException(ErrorCode.PHONE_ALREADY_REGISTERED);
         }
         
         // Check if email is provided and already exists
         if (request.getEmail() != null && !request.getEmail().isEmpty() 
             && userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already registered");
+            throw new BaseException(ErrorCode.EMAIL_ALREADY_REGISTERED);
         }
         
         // Validate password strength
@@ -51,14 +58,14 @@ public class UserService {
     @Transactional(readOnly = true)
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByPhone(request.getPhone())
-            .orElseThrow(() -> new RuntimeException("User not found with this phone number"));
+            .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND, "User not found with this phone number"));
         
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid credentials");
+            throw new BaseException(ErrorCode.INVALID_CREDENTIALS);
         }
         
         if (!user.getIsActive()) {
-            throw new RuntimeException("User account is inactive");
+            throw new BaseException(ErrorCode.USER_ACCOUNT_INACTIVE);
         }
 
         String token = jwtUtils.generateToken(user.getPhone());
@@ -70,12 +77,27 @@ public class UserService {
     @Transactional(readOnly = true)
     public User getUserById(Long userId) {
         return userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
+    }
+
+    @Transactional(readOnly = true)
+    public UserDetailsResponse getUserByPhone(String phoneNumber) {
+        Long driverId = null;
+        User user = userRepository.findByPhone(phoneNumber).orElseThrow(
+            () -> new BaseException(ErrorCode.USER_NOT_FOUND, "User not found with phone number: " + phoneNumber));
+
+        if (UserRole.DRIVER.equals(user.getRole())) {
+            driverId = driverRepository.findByUserId(user.getId()).map(Driver::getId).orElse(null);
+        }
+
+        return new UserDetailsResponse(user.getId(), driverId, user.getName(), user.getEmail(),
+            user.getPhone(), user.getRole(), user.getIsActive(), user.getCreatedAt(),
+            user.getUpdatedAt());
     }
     
     private void validatePassword(String password) {
         if (password == null || password.length() < 8) {
-            throw new RuntimeException("Password must be at least 8 characters long");
+            throw new BaseException(ErrorCode.PASSWORD_TOO_SHORT);
         }
         
         boolean hasUpperCase = password.chars().anyMatch(Character::isUpperCase);
@@ -85,13 +107,13 @@ public class UserService {
         );
         
         if (!hasUpperCase) {
-            throw new RuntimeException("Password must contain at least one uppercase letter");
+            throw new BaseException(ErrorCode.PASSWORD_MISSING_UPPERCASE);
         }
         if (!hasDigit) {
-            throw new RuntimeException("Password must contain at least one number");
+            throw new BaseException(ErrorCode.PASSWORD_MISSING_NUMBER);
         }
         if (!hasSpecialChar) {
-            throw new RuntimeException("Password must contain at least one special character (!@#$%^&*()_+-=[]{}|;':\"\\,.<>/?)");
+            throw new BaseException(ErrorCode.PASSWORD_MISSING_SPECIAL_CHAR);
         }
     }
 }

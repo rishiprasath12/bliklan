@@ -28,6 +28,14 @@ public class GlobalExceptionHandler {
             .body(ApiResponse.error("Validation failed"));
     }
     
+    @ExceptionHandler(BaseException.class)
+    public ResponseEntity<ApiResponse<Void>> handleBaseException(BaseException ex) {
+        // Use the HTTP status code directly from the error code
+        HttpStatus status = HttpStatus.valueOf(ex.getErrorCodeValue());
+        ApiResponse<Void> response = ApiResponse.error(ex.getErrorMessage());
+        return ResponseEntity.status(status).body(response);
+    }
+    
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ApiResponse<Void>> handleRuntimeException(RuntimeException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)

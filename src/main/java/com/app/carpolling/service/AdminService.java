@@ -2,6 +2,8 @@ package com.app.carpolling.service;
 
 import com.app.carpolling.dto.AdminDashboardStats;
 import com.app.carpolling.entity.*;
+import com.app.carpolling.exception.BaseException;
+import com.app.carpolling.exception.ErrorCode;
 import com.app.carpolling.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -38,7 +40,7 @@ public class AdminService {
     @Transactional
     public Driver verifyDriver(Long driverId) {
         Driver driver = driverRepository.findById(driverId)
-            .orElseThrow(() -> new RuntimeException("Driver not found"));
+            .orElseThrow(() -> new BaseException(ErrorCode.DRIVER_NOT_FOUND));
         driver.setIsVerified(true);
         return driverRepository.save(driver);
     }
@@ -46,7 +48,7 @@ public class AdminService {
     @Transactional
     public Driver unverifyDriver(Long driverId) {
         Driver driver = driverRepository.findById(driverId)
-            .orElseThrow(() -> new RuntimeException("Driver not found"));
+            .orElseThrow(() -> new BaseException(ErrorCode.DRIVER_NOT_FOUND));
         driver.setIsVerified(false);
         return driverRepository.save(driver);
     }
@@ -54,7 +56,7 @@ public class AdminService {
     @Transactional
     public User activateUser(Long userId) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
         user.setIsActive(true);
         return userRepository.save(user);
     }
@@ -62,7 +64,7 @@ public class AdminService {
     @Transactional
     public User deactivateUser(Long userId) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+            .orElseThrow(() -> new BaseException(ErrorCode.USER_NOT_FOUND));
         user.setIsActive(false);
         return userRepository.save(user);
     }

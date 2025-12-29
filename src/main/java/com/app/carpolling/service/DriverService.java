@@ -3,6 +3,8 @@ package com.app.carpolling.service;
 import com.app.carpolling.dto.DriverRegistrationRequest;
 import com.app.carpolling.entity.Driver;
 import com.app.carpolling.entity.User;
+import com.app.carpolling.exception.BaseException;
+import com.app.carpolling.exception.ErrorCode;
 import com.app.carpolling.repository.DriverRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,12 +21,12 @@ public class DriverService {
     public Driver registerDriver(DriverRegistrationRequest request) {
         // Check if driver already exists for this user
         if (driverRepository.findByUserId(request.getUserId()).isPresent()) {
-            throw new RuntimeException("Driver profile already exists for this user");
+            throw new BaseException(ErrorCode.DRIVER_PROFILE_ALREADY_EXISTS);
         }
         
         // Check if license number already exists
         if (driverRepository.existsByLicenseNumber(request.getLicenseNumber())) {
-            throw new RuntimeException("License number already registered");
+            throw new BaseException(ErrorCode.LICENSE_NUMBER_ALREADY_REGISTERED);
         }
         
         // Get user
@@ -47,13 +49,13 @@ public class DriverService {
     @Transactional(readOnly = true)
     public Driver getDriverById(Long driverId) {
         return driverRepository.findById(driverId)
-            .orElseThrow(() -> new RuntimeException("Driver not found"));
+            .orElseThrow(() -> new BaseException(ErrorCode.DRIVER_NOT_FOUND));
     }
     
     @Transactional(readOnly = true)
     public Driver getDriverByUserId(Long userId) {
         return driverRepository.findByUserId(userId)
-            .orElseThrow(() -> new RuntimeException("Driver profile not found for this user"));
+            .orElseThrow(() -> new BaseException(ErrorCode.DRIVER_NOT_FOUND, "Driver profile not found for this user"));
     }
 }
 

@@ -3,6 +3,8 @@ package com.app.carpolling.service;
 import com.app.carpolling.dto.VehicleRegistrationRequest;
 import com.app.carpolling.entity.Driver;
 import com.app.carpolling.entity.Vehicle;
+import com.app.carpolling.exception.BaseException;
+import com.app.carpolling.exception.ErrorCode;
 import com.app.carpolling.repository.VehicleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,7 +23,7 @@ public class VehicleService {
     public Vehicle registerVehicle(VehicleRegistrationRequest request) {
         // Check if registration number already exists
         if (vehicleRepository.existsByRegistrationNumber(request.getRegistrationNumber())) {
-            throw new RuntimeException("Vehicle registration number already exists");
+            throw new BaseException(ErrorCode.VEHICLE_REGISTRATION_EXISTS);
         }
         
         // Get driver
@@ -48,7 +50,7 @@ public class VehicleService {
     @Transactional(readOnly = true)
     public Vehicle getVehicleById(Long vehicleId) {
         return vehicleRepository.findById(vehicleId)
-            .orElseThrow(() -> new RuntimeException("Vehicle not found"));
+            .orElseThrow(() -> new BaseException(ErrorCode.VEHICLE_NOT_FOUND));
     }
     
     @Transactional(readOnly = true)
