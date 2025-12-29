@@ -28,7 +28,7 @@
 							"host": ["{{baseUrl}}"],
 							"path": ["api", "users", "register"]
 						},
-						"description": "Register a new user (passenger or driver). Phone number is required (10 digits). Email is optional. Password requirements: minimum 8 characters, at least one uppercase letter, one number, and one special character. Role values: PASSENGER, DRIVER, BOTH"
+						"description": "Register a new user (passenger or driver). Phone number is required (10 digits). Email is optional. Password requirements: minimum 8 characters, at least one uppercase letter, one number, and one special character. Role values: PASSENGER, DRIVER, BOTH. Returns an AuthResponse containing a JWT token."
 					}
 				},
 				{
@@ -167,6 +167,19 @@
 							"path": ["api", "drivers", "routes"]
 						},
 						"description": "Create a route with multiple points. distanceFromStart is in kilometers, timeFromStart is in minutes. Points must be ordered by sequenceOrder."
+					}
+				},
+				{
+					"name": "Get Driver Routes",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/drivers/{{driverId}}/routes",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "drivers", "{{driverId}}", "routes"]
+						},
+						"description": "Get all routes created by a driver."
 					}
 				}
 			]
@@ -681,6 +694,22 @@
 		{
 			"key": "transactionId",
 			"value": "TXN20241125093212ABC123",
+			"type": "string"
+		},
+		{
+			"key": "jwt",
+			"value": "",
+			"type": "string",
+			"description": "JWT token from login/register response. Set this after logging in."
+		},
+		{
+			"key": "routeId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "vehicleId",
+			"value": "1",
 			"type": "string"
 		}
 	]
