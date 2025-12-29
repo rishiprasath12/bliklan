@@ -136,12 +136,12 @@ public class TripService {
             .findByRouteIdOrderBySequenceOrderAsc(trip.getRoute().getId());
         
         RoutePoint boarding = routePoints.stream()
-            .filter(rp -> rp.getPointName().equals(boardingPoint))
+            .filter(rp -> rp.getCity().equals(boardingPoint))
             .findFirst()
             .orElseThrow(() -> new BaseException(ErrorCode.BOARDING_POINT_NOT_FOUND));
         
         RoutePoint drop = routePoints.stream()
-            .filter(rp -> rp.getPointName().equals(dropPoint))
+            .filter(rp -> rp.getCity().equals(dropPoint))
             .findFirst()
             .orElseThrow(() -> new BaseException(ErrorCode.DROP_POINT_NOT_FOUND));
         

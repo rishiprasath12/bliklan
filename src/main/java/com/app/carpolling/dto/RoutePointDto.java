@@ -35,8 +35,8 @@ public class RoutePointDto {
     @NotNull(message = "Time from start is required")
     private Integer timeFromStart;
     
-    private Boolean isBoardingPoint = true;
+    private Boolean isBoardingPoint = false;
     
-    private Boolean isDropPoint = true;
+    private Boolean isDropPoint = false;
 }
 

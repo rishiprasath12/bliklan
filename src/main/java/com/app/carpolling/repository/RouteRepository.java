@@ -16,8 +16,8 @@ public interface RouteRepository extends JpaRepository<Route, Long> {
     
     @Query("SELECT DISTINCT r FROM Route r JOIN r.routePoints rp1 JOIN r.routePoints rp2 " +
            "WHERE r.isActive = true " +
-           "AND rp1.pointName = :boardingPoint " +
-           "AND rp2.pointName = :dropPoint " +
+           "AND rp1.city = :boardingPoint " +
+           "AND rp2.city = :dropPoint " +
            "AND rp1.sequenceOrder < rp2.sequenceOrder")
     List<Route> findRoutesByBoardingAndDropPoint(
         @Param("boardingPoint") String boardingPoint,
