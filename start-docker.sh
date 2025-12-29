@@ -30,6 +30,23 @@ if ! command -v docker-compose &> /dev/null; then
     exit 1
 fi
 
+# Clean up any existing containers (both docker-compose managed and standalone)
+echo "🧹 Cleaning up existing containers..."
+docker-compose down 2>/dev/null || true
+
+# Remove containers by name if they exist (handles containers created outside docker-compose)
+if docker ps -a --format '{{.Names}}' | grep -q "^carpolling-postgres$"; then
+    echo "   Removing existing carpolling-postgres container..."
+    docker rm -f carpolling-postgres 2>/dev/null || true
+fi
+
+if docker ps -a --format '{{.Names}}' | grep -q "^carpolling-app$"; then
+    echo "   Removing existing carpolling-app container..."
+    docker rm -f carpolling-app 2>/dev/null || true
+fi
+
+echo ""
+
 echo "🏗️  Building and starting containers..."
 echo ""
 

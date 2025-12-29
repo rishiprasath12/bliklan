@@ -1,0 +1,688 @@
+{
+	"info": {
+		"_postman_id": "carpolling-api-collection",
+		"name": "Carpooling System API",
+		"description": "Complete API collection for the Carpooling System application",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "User Management",
+			"item": [
+				{
+					"name": "Register User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"phone\": \"9876543210\",\n  \"password\": \"SecurePass@123\",\n  \"role\": \"PASSENGER\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/users/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "users", "register"]
+						},
+						"description": "Register a new user (passenger or driver). Phone number is required (10 digits). Email is optional. Password requirements: minimum 8 characters, at least one uppercase letter, one number, and one special character. Role values: PASSENGER, DRIVER, BOTH"
+					}
+				},
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"phone\": \"9876543210\",\n  \"password\": \"SecurePass@123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/users/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "users", "login"]
+						},
+						"description": "Authenticate user using phone number. Login is phone-based only. Phone number must be 10 digits. Returns an AuthResponse containing a JWT token."
+					}
+				},
+				{
+					"name": "Get Current User Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/getUserDetails",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "users", "getUserDetails"]
+						},
+						"description": "Get details of the currently authenticated user using the JWT token returned from the Login endpoint. Set the {{jwt}} variable to the token value."
+					}
+				}
+			]
+		},
+		{
+			"name": "Driver Management",
+			"item": [
+				{
+					"name": "Register Driver",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": 1,\n  \"licenseNumber\": \"DL1234567890\",\n  \"licenseExpiryDate\": \"2025-12-31\",\n  \"experienceYears\": 5,\n  \"additionalInfo\": \"Professional driver with 5 years experience\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/drivers/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "drivers", "register"]
+						},
+						"description": "Register driver profile for an existing user."
+					}
+				},
+				{
+					"name": "Get Driver by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/drivers/{{driverId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "drivers", "{{driverId}}"]
+						},
+						"description": "Get driver details by driver ID."
+					}
+				},
+				{
+					"name": "Register Vehicle",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"driverId\": 1,\n  \"registrationNumber\": \"MH01AB1234\",\n  \"brand\": \"Toyota\",\n  \"model\": \"Innova Crysta\",\n  \"color\": \"White\",\n  \"manufacturingYear\": 2020,\n  \"vehicleType\": \"SUV\",\n  \"totalSeats\": 7,\n  \"hasAC\": true,\n  \"features\": \"GPS Navigation, Premium Sound System, USB Charging\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/drivers/vehicles",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "drivers", "vehicles"]
+						},
+						"description": "Add a vehicle to driver's profile. Vehicle Types: SEDAN, SUV, HATCHBACK, MUV, LUXURY"
+					}
+				},
+				{
+					"name": "Get Driver Vehicles",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/drivers/{{driverId}}/vehicles",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "drivers", "{{driverId}}", "vehicles"]
+						},
+						"description": "Get all vehicles registered by a driver."
+					}
+				},
+				{
+					"name": "Create Route",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"driverId\": 1,\n  \"routeName\": \"Mumbai to Pune via Lonavala\",\n  \"totalDistance\": 150.5,\n  \"estimatedDuration\": 180,\n  \"routePoints\": [\n    {\n      \"city\": \"Mumbai\",\n      \"subLocation\": \"Mumbai Central\",\n      \"address\": \"Mumbai Central Railway Station, Mumbai\",\n      \"latitude\": 18.9682,\n      \"longitude\": 72.8209,\n      \"sequenceOrder\": 1,\n      \"distanceFromStart\": 0,\n      \"timeFromStart\": 0,\n      \"isBoardingPoint\": true,\n      \"isDropPoint\": false\n    },\n    {\n      \"city\": \"Lonavala\",\n      \"subLocation\": \"Lonavala Bus Stand\",\n      \"address\": \"Lonavala Bus Stand, Lonavala\",\n      \"latitude\": 18.7537,\n      \"longitude\": 73.4086,\n      \"sequenceOrder\": 2,\n      \"distanceFromStart\": 83,\n      \"timeFromStart\": 90,\n      \"isBoardingPoint\": true,\n      \"isDropPoint\": true\n    },\n    {\n      \"city\": \"Pune\",\n      \"subLocation\": \"Pune Station\",\n      \"address\": \"Pune Railway Station, Pune\",\n      \"latitude\": 18.5204,\n      \"longitude\": 73.8567,\n      \"sequenceOrder\": 3,\n      \"distanceFromStart\": 150,\n      \"timeFromStart\": 180,\n      \"isBoardingPoint\": false,\n      \"isDropPoint\": true\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/drivers/routes",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "drivers", "routes"]
+						},
+						"description": "Create a route with multiple points. distanceFromStart is in kilometers, timeFromStart is in minutes. Points must be ordered by sequenceOrder."
+					}
+				}
+			]
+		},
+		{
+			"name": "Trip Management",
+			"item": [
+				{
+					"name": "Create Trip",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"routeId\": 1,\n  \"vehicleId\": 1,\n  \"driverId\": 1,\n  \"departureTime\": \"2024-12-25T08:00:00\",\n  \"basePricePerKm\": 10.0,\n  \"specialInstructions\": \"Please arrive 10 minutes before departure\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/trips",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "trips"]
+						},
+						"description": "Schedule a trip on a route."
+					}
+				},
+				{
+					"name": "Search Trips",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"boardingPoint\": \"Mumbai Central\",\n  \"dropPoint\": \"Pune Station\",\n  \"travelDate\": \"2024-12-25\",\n  \"requiredSeats\": 2\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/trips/search",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "trips", "search"]
+						},
+						"description": "Search for available trips between two points on a date."
+					}
+				},
+				{
+					"name": "Get Seat Availability",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/trips/{{tripId}}/seats",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "trips", "{{tripId}}", "seats"]
+						},
+						"description": "Get seat layout and availability for a trip."
+					}
+				},
+				{
+					"name": "Get All Cities",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/trips/cities?search=",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "trips", "cities"],
+							"query": [
+								{
+									"key": "search",
+									"value": "",
+									"description": "Optional search parameter"
+								}
+							]
+						},
+						"description": "Get list of all cities. Optional search parameter for filtering."
+					}
+				},
+				{
+					"name": "Get Boarding Cities",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/trips/cities/boarding",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "trips", "cities", "boarding"]
+						},
+						"description": "Get list of all cities that have boarding points."
+					}
+				},
+				{
+					"name": "Get Drop Cities",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/trips/cities/drop",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "trips", "cities", "drop"]
+						},
+						"description": "Get list of all cities that have drop points."
+					}
+				},
+				{
+					"name": "Get Boarding Locations by City",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/trips/locations/boarding?city=Mumbai",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "trips", "locations", "boarding"],
+							"query": [
+								{
+									"key": "city",
+									"value": "Mumbai",
+									"description": "City name"
+								}
+							]
+						},
+						"description": "Get boarding sub-locations for a specific city."
+					}
+				},
+				{
+					"name": "Get Drop Locations by City",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/trips/locations/drop?city=Pune",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "trips", "locations", "drop"],
+							"query": [
+								{
+									"key": "city",
+									"value": "Pune",
+									"description": "City name"
+								}
+							]
+						},
+						"description": "Get drop sub-locations for a specific city."
+					}
+				},
+				{
+					"name": "Get All Boarding Points",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/trips/boarding-points?search=",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "trips", "boarding-points"],
+							"query": [
+								{
+									"key": "search",
+									"value": "",
+									"description": "Optional search parameter"
+								}
+							]
+						},
+						"description": "Get list of all boarding points available in the system. Optional search parameter for filtering."
+					}
+				},
+				{
+					"name": "Get All Drop Points",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/trips/drop-points?search=",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "trips", "drop-points"],
+							"query": [
+								{
+									"key": "search",
+									"value": "",
+									"description": "Optional search parameter"
+								}
+							]
+						},
+						"description": "Get list of all drop points available in the system. Optional search parameter for filtering."
+					}
+				},
+				{
+					"name": "Get Boarding Locations (Hierarchical)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/trips/boarding-locations?city=Bangalore",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "trips", "boarding-locations"],
+							"query": [
+								{
+									"key": "city",
+									"value": "Bangalore",
+									"description": "City name"
+								}
+							]
+						},
+						"description": "Get boarding locations with hierarchical structure (city and sub-locations) for a specific city."
+					}
+				}
+			]
+		},
+		{
+			"name": "Booking Management",
+			"item": [
+				{
+					"name": "Create Booking",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": 1,\n  \"tripId\": 1,\n  \"boardingPointId\": 1,\n  \"dropPointId\": 3,\n  \"seatNumbers\": [\"S1\", \"S2\"],\n  \"passengerNames\": \"John Doe, Jane Doe\",\n  \"passengerContacts\": \"9876543210, 9876543211\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/bookings",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "bookings"]
+						},
+						"description": "Book seats on a trip."
+					}
+				},
+				{
+					"name": "Get User Bookings",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/bookings/user/{{userId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "bookings", "user", "{{userId}}"]
+						},
+						"description": "Get all bookings for a user."
+					}
+				},
+				{
+					"name": "Get Booking by Reference",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/bookings/reference/{{bookingReference}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "bookings", "reference", "{{bookingReference}}"]
+						},
+						"description": "Get booking details by booking reference number."
+					}
+				},
+				{
+					"name": "Cancel Booking",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/bookings/{{bookingId}}/cancel",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "bookings", "{{bookingId}}", "cancel"]
+						},
+						"description": "Cancel an existing booking."
+					}
+				}
+			]
+		},
+		{
+			"name": "Payment Management",
+			"item": [
+				{
+					"name": "Process Payment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"bookingId\": 1,\n  \"paymentMethod\": \"UPI\",\n  \"cardDetails\": \"encrypted_payment_details\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/payments/process",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "payments", "process"]
+						},
+						"description": "Process payment for a booking. Payment Methods: CREDIT_CARD, DEBIT_CARD, UPI, NET_BANKING, WALLET. On successful payment, booking status automatically changes to CONFIRMED."
+					}
+				},
+				{
+					"name": "Get Payment by Booking ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/payments/booking/{{bookingId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "payments", "booking", "{{bookingId}}"]
+						},
+						"description": "Get payment details for a booking."
+					}
+				},
+				{
+					"name": "Get Payment by Transaction ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/payments/transaction/{{transactionId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "payments", "transaction", "{{transactionId}}"]
+						},
+						"description": "Get payment details by transaction ID."
+					}
+				}
+			]
+		},
+		{
+			"name": "Admin Management",
+			"item": [
+				{
+					"name": "Get Dashboard Stats",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/dashboard/stats",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "dashboard", "stats"]
+						},
+						"description": "Get admin dashboard statistics."
+					}
+				},
+				{
+					"name": "Get All Users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/users",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "users"]
+						},
+						"description": "Get all users in the system."
+					}
+				},
+				{
+					"name": "Activate User",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/users/{{userId}}/activate",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "users", "{{userId}}", "activate"]
+						},
+						"description": "Activate a user account."
+					}
+				},
+				{
+					"name": "Deactivate User",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/users/{{userId}}/deactivate",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "users", "{{userId}}", "deactivate"]
+						},
+						"description": "Deactivate a user account."
+					}
+				},
+				{
+					"name": "Get All Drivers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/drivers",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "drivers"]
+						},
+						"description": "Get all drivers in the system."
+					}
+				},
+				{
+					"name": "Get Unverified Drivers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/drivers/unverified",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "drivers", "unverified"]
+						},
+						"description": "Get all unverified drivers."
+					}
+				},
+				{
+					"name": "Verify Driver",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/drivers/{{driverId}}/verify",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "drivers", "{{driverId}}", "verify"]
+						},
+						"description": "Verify a driver account."
+					}
+				},
+				{
+					"name": "Unverify Driver",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/drivers/{{driverId}}/unverify",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "drivers", "{{driverId}}", "unverify"]
+						},
+						"description": "Revoke driver verification."
+					}
+				},
+				{
+					"name": "Get All Vehicles",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/vehicles",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "vehicles"]
+						},
+						"description": "Get all vehicles in the system."
+					}
+				},
+				{
+					"name": "Get All Trips",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/trips",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "trips"]
+						},
+						"description": "Get all trips in the system."
+					}
+				},
+				{
+					"name": "Get All Bookings",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/bookings",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "bookings"]
+						},
+						"description": "Get all bookings in the system."
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8010",
+			"type": "string"
+		},
+		{
+			"key": "userId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "driverId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "tripId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "bookingId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "bookingReference",
+			"value": "BK20241125093045",
+			"type": "string"
+		},
+		{
+			"key": "transactionId",
+			"value": "TXN20241125093212ABC123",
+			"type": "string"
+		}
+	]
+}
+
