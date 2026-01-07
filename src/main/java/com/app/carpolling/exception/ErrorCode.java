@@ -15,6 +15,7 @@ public enum ErrorCode {
     BOOKING_ALREADY_CANCELLED(400, "Booking is already cancelled"),
     BOOKING_NOT_PENDING(400, "Booking is not in pending state"),
     INVALID_REQUEST(400, "Invalid request"),
+    INVALID_ROUTE(400, "Invalid route configuration"),
     
     // 401 - Unauthorized (Authentication Errors)
     INVALID_CREDENTIALS(401, "Invalid credentials provided"),
@@ -37,6 +38,7 @@ public enum ErrorCode {
     BOOKING_NOT_FOUND(404, "Booking not found"),
     SEAT_NOT_FOUND(404, "Seat not found"),
     PAYMENT_NOT_FOUND(404, "Payment not found"),
+    PRICE_NOT_FOUND(404, "Price not configured for this route combination"),
     RESOURCE_NOT_FOUND(404, "Requested resource not found"),
     
     // 409 - Conflict (Resource Already Exists or State Conflict)

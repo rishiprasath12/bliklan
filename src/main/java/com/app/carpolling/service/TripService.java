@@ -8,6 +8,7 @@ import com.app.carpolling.entity.*;
 import com.app.carpolling.exception.BaseException;
 import com.app.carpolling.exception.ErrorCode;
 import com.app.carpolling.repository.RoutePointRepository;
+import com.app.carpolling.repository.RoutePriceRepository;
 import com.app.carpolling.repository.TripRepository;
 import com.app.carpolling.repository.TripSeatRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ public class TripService {
     private final TripRepository tripRepository;
     private final TripSeatRepository tripSeatRepository;
     private final RoutePointRepository routePointRepository;
+    private final RoutePriceRepository routePriceRepository;
     private final RouteService routeService;
     private final VehicleService vehicleService;
     private final DriverService driverService;
@@ -54,7 +56,6 @@ public class TripService {
         trip.setDriver(driver);
         trip.setDepartureTime(request.getDepartureTime());
         trip.setEstimatedArrivalTime(estimatedArrival);
-        trip.setBasePricePerKm(request.getBasePricePerKm());
         trip.setAvailableSeats(vehicle.getPassengerSeats());
         trip.setBookedSeats(0);
         trip.setStatus(TripStatus.SCHEDULED);
@@ -145,9 +146,16 @@ public class TripService {
             .findFirst()
             .orElseThrow(() -> new BaseException(ErrorCode.DROP_POINT_NOT_FOUND));
         
+        // Get fixed price from route price matrix
+        RoutePrice routePrice = routePriceRepository.findByRouteAndPoints(
+            trip.getRoute().getId(),
+            boarding.getId(),
+            drop.getId()
+        ).orElseThrow(() -> new BaseException(ErrorCode.PRICE_NOT_FOUND, 
+            "Price not configured for this boarding-drop combination"));
+        
         double distance = (drop.getDistanceFromStart() - boarding.getDistanceFromStart()) / 1000.0;
         int duration = drop.getTimeFromStart() - boarding.getTimeFromStart();
-        double totalPrice = distance * trip.getBasePricePerKm();
         
         LocalDateTime arrivalTime = trip.getDepartureTime().plusMinutes(duration);
         
@@ -165,8 +173,7 @@ public class TripService {
         response.setDepartureTime(trip.getDepartureTime());
         response.setArrivalTime(arrivalTime);
         response.setAvailableSeats(trip.getAvailableSeats());
-        response.setPricePerKm(trip.getBasePricePerKm());
-        response.setTotalPrice(totalPrice);
+        response.setPrice(routePrice.getPrice()); // Fixed price per seat
         response.setDistance(distance);
         response.setDuration(duration);
         response.setRouteName(trip.getRoute().getRouteName());
@@ -210,6 +217,73 @@ public class TripService {
         driverService.getDriverById(driverId);
         
         return tripRepository.findByDriverIdOrderByDepartureTimeDesc(driverId);
+    }
+    
+    @Transactional(readOnly = true)
+    public java.util.Map<String, Object> getTripRoutePoints(Long tripId, String boardingCity, String dropCity) {
+        Trip trip = getTripById(tripId);
+        Long routeId = trip.getRoute().getId();
+        
+        // Get boarding points for the selected city
+        List<RoutePoint> boardingPoints = routePointRepository.findBoardingPointsByRouteAndCity(routeId, boardingCity);
+        if (boardingPoints.isEmpty()) {
+            throw new BaseException(ErrorCode.BOARDING_POINT_NOT_FOUND, 
+                "No boarding points found for city: " + boardingCity);
+        }
+        
+        // Get drop points for the selected city
+        List<RoutePoint> dropPoints = routePointRepository.findDropPointsByRouteAndCity(routeId, dropCity);
+        if (dropPoints.isEmpty()) {
+            throw new BaseException(ErrorCode.DROP_POINT_NOT_FOUND, 
+                "No drop points found for city: " + dropCity);
+        }
+        
+        // Get price for this city combination
+        RoutePrice routePrice = routePriceRepository.findByRouteAndPoints(
+            routeId,
+            boardingPoints.get(0).getId(),
+            dropPoints.get(0).getId()
+        ).orElseThrow(() -> new BaseException(ErrorCode.PRICE_NOT_FOUND, 
+            "Price not configured for this route combination"));
+        
+        // Convert to response DTOs
+        List<com.app.carpolling.dto.RoutePointResponseDto> boardingPointDtos = boardingPoints.stream()
+            .map(this::convertToRoutePointDto)
+            .collect(Collectors.toList());
+        
+        List<com.app.carpolling.dto.RoutePointResponseDto> dropPointDtos = dropPoints.stream()
+            .map(this::convertToRoutePointDto)
+            .collect(Collectors.toList());
+        
+        // Build response
+        java.util.Map<String, Object> response = new java.util.HashMap<>();
+        response.put("tripId", tripId);
+        response.put("routeId", routeId);
+        response.put("boardingCity", boardingCity);
+        response.put("dropCity", dropCity);
+        response.put("boardingPoints", boardingPointDtos);
+        response.put("dropPoints", dropPointDtos);
+        response.put("pricePerSeat", routePrice.getPrice());
+        
+        return response;
+    }
+    
+    private com.app.carpolling.dto.RoutePointResponseDto convertToRoutePointDto(RoutePoint rp) {
+        return new com.app.carpolling.dto.RoutePointResponseDto(
+            rp.getId(),
+            rp.getRoute().getId(),
+            rp.getCity(),
+            rp.getSubLocation(),
+            rp.getPointName(),
+            rp.getAddress(),
+            rp.getLatitude(),
+            rp.getLongitude(),
+            rp.getSequenceOrder(),
+            rp.getDistanceFromStart(),
+            rp.getTimeFromStart(),
+            rp.getIsBoardingPoint(),
+            rp.getIsDropPoint()
+        );
     }
 }
 

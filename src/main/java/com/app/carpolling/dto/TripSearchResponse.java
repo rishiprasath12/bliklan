@@ -24,8 +24,7 @@ public class TripSearchResponse {
     private LocalDateTime departureTime;
     private LocalDateTime arrivalTime;
     private Integer availableSeats;
-    private Double pricePerKm;
-    private Double totalPrice;
+    private Double price; // Fixed price for this boarding-drop combination
     private Double distance;
     private Integer duration;
     private String routeName;

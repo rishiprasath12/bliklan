@@ -1,9 +1,6 @@
 package com.app.carpolling.controller;
 
-import com.app.carpolling.dto.ApiResponse;
-import com.app.carpolling.dto.DriverRegistrationRequest;
-import com.app.carpolling.dto.RouteCreationRequest;
-import com.app.carpolling.dto.VehicleRegistrationRequest;
+import com.app.carpolling.dto.*;
 import com.app.carpolling.entity.Driver;
 import com.app.carpolling.entity.Route;
 import com.app.carpolling.entity.Vehicle;
@@ -101,6 +98,36 @@ public class DriverController {
         try {
             List<Route> routes = routeService.getRoutesByDriverId(driverId);
             return ResponseEntity.ok(ApiResponse.success("Routes retrieved successfully", routes));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error(e.getMessage()));
+        }
+    }
+    
+    @GetMapping("/routes/{routeId}/price-combinations")
+    public ResponseEntity<ApiResponse<List<RoutePriceCombinationDto>>> getRoutePriceCombinations(
+        @PathVariable Long routeId
+    ) {
+        try {
+            List<RoutePriceCombinationDto> combinations = routeService.getRoutePriceCombinations(routeId);
+            return ResponseEntity.ok(
+                ApiResponse.success("Route price combinations retrieved successfully", combinations)
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error(e.getMessage()));
+        }
+    }
+    
+    @PostMapping("/routes/prices")
+    public ResponseEntity<ApiResponse<String>> setRoutePrices(
+        @Valid @RequestBody SetRoutePricesRequest request
+    ) {
+        try {
+            routeService.setRoutePrices(request);
+            return ResponseEntity.ok(
+                ApiResponse.success("Route prices set successfully", "Prices updated")
+            );
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ApiResponse.error(e.getMessage()));

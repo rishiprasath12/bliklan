@@ -45,9 +45,6 @@ public class Trip {
     private LocalDateTime estimatedArrivalTime;
     
     @Column(nullable = false)
-    private Double basePricePerKm; // Price per kilometer
-    
-    @Column(nullable = false)
     private Integer availableSeats;
     
     @Column(nullable = false)

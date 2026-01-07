@@ -1,5 +1,6 @@
 package com.app.carpolling.dto;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -20,14 +21,15 @@ public class RouteCreationRequest {
     @NotBlank(message = "Route name is required")
     private String routeName;
     
-    @NotNull(message = "Total distance is required")
+    @NotNull(message = "Total distance is required (in meters)")
     private Double totalDistance;
     
-    @NotNull(message = "Estimated duration is required")
+    @NotNull(message = "Estimated duration is required (in minutes)")
     private Integer estimatedDuration;
     
-    @NotEmpty(message = "Route points are required")
-    private List<RoutePointDto> routePoints;
+    @NotEmpty(message = "At least one city with stops is required")
+    @Valid
+    private List<CityRouteDto> cities; // List of cities with their stop points
 }
 
 

@@ -212,7 +212,6 @@ SELECT
     t.departure_time,
     t.estimated_arrival_time,
     t.available_seats,
-    t.base_price_per_km,
     t.status
 FROM trips t
 JOIN routes r ON t.route_id = r.id

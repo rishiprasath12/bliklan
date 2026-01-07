@@ -70,5 +70,29 @@ public interface RoutePointRepository extends JpaRepository<RoutePoint, Long> {
 
     @Query("SELECT rp FROM RoutePoint rp WHERE rp.city = :city AND rp.isBoardingPoint = true ORDER BY rp.subLocation")
     List<RoutePoint> findBoardingPointsByCity(@Param("city") String city);
+    
+    // Get all boarding points for a specific route and city
+    @Query("SELECT rp FROM RoutePoint rp " +
+           "WHERE rp.route.id = :routeId AND rp.city = :city AND rp.isBoardingPoint = true " +
+           "ORDER BY rp.sequenceOrder")
+    List<RoutePoint> findBoardingPointsByRouteAndCity(@Param("routeId") Long routeId, @Param("city") String city);
+    
+    // Get all drop points for a specific route and city
+    @Query("SELECT rp FROM RoutePoint rp " +
+           "WHERE rp.route.id = :routeId AND rp.city = :city AND rp.isDropPoint = true " +
+           "ORDER BY rp.sequenceOrder")
+    List<RoutePoint> findDropPointsByRouteAndCity(@Param("routeId") Long routeId, @Param("city") String city);
+    
+    // Get all boarding points for a trip
+    @Query("SELECT rp FROM RoutePoint rp " +
+           "WHERE rp.route.id = :routeId AND rp.isBoardingPoint = true " +
+           "ORDER BY rp.sequenceOrder")
+    List<RoutePoint> findBoardingPointsByRoute(@Param("routeId") Long routeId);
+    
+    // Get all drop points for a trip
+    @Query("SELECT rp FROM RoutePoint rp " +
+           "WHERE rp.route.id = :routeId AND rp.isDropPoint = true " +
+           "ORDER BY rp.sequenceOrder")
+    List<RoutePoint> findDropPointsByRoute(@Param("routeId") Long routeId);
 }
 

@@ -201,5 +201,22 @@ public class TripController {
                 .body(ApiResponse.error(e.getMessage()));
         }
     }
+    
+    @GetMapping("/{tripId}/route-points")
+    public ResponseEntity<ApiResponse<java.util.Map<String, Object>>> getTripRoutePoints(
+        @PathVariable Long tripId,
+        @RequestParam String boardingCity,
+        @RequestParam String dropCity
+    ) {
+        try {
+            java.util.Map<String, Object> routePoints = tripService.getTripRoutePoints(tripId, boardingCity, dropCity);
+            return ResponseEntity.ok(
+                ApiResponse.success("Route points retrieved successfully", routePoints)
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error(e.getMessage()));
+        }
+    }
 }
 

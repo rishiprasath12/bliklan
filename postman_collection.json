@@ -159,14 +159,14 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"driverId\": 1,\n  \"routeName\": \"Mumbai to Pune via Lonavala\",\n  \"totalDistance\": 150.5,\n  \"estimatedDuration\": 180,\n  \"routePoints\": [\n    {\n      \"city\": \"Mumbai\",\n      \"subLocation\": \"Mumbai Central\",\n      \"address\": \"Mumbai Central Railway Station, Mumbai\",\n      \"latitude\": 18.9682,\n      \"longitude\": 72.8209,\n      \"sequenceOrder\": 1,\n      \"distanceFromStart\": 0,\n      \"timeFromStart\": 0,\n      \"isBoardingPoint\": true,\n      \"isDropPoint\": false\n    },\n    {\n      \"city\": \"Lonavala\",\n      \"subLocation\": \"Lonavala Bus Stand\",\n      \"address\": \"Lonavala Bus Stand, Lonavala\",\n      \"latitude\": 18.7537,\n      \"longitude\": 73.4086,\n      \"sequenceOrder\": 2,\n      \"distanceFromStart\": 83,\n      \"timeFromStart\": 90,\n      \"isBoardingPoint\": true,\n      \"isDropPoint\": true\n    },\n    {\n      \"city\": \"Pune\",\n      \"subLocation\": \"Pune Station\",\n      \"address\": \"Pune Railway Station, Pune\",\n      \"latitude\": 18.5204,\n      \"longitude\": 73.8567,\n      \"sequenceOrder\": 3,\n      \"distanceFromStart\": 150,\n      \"timeFromStart\": 180,\n      \"isBoardingPoint\": false,\n      \"isDropPoint\": true\n    }\n  ]\n}"
+							"raw": "{\n  \"driverId\": 1,\n  \"routeName\": \"Bangalore to Chennai Express\",\n  \"totalDistance\": 350000.0,\n  \"estimatedDuration\": 420,\n  \"cities\": [\n    {\n      \"city\": \"Bangalore\",\n      \"sequenceOrder\": 1,\n      \"isBoardingPoint\": true,\n      \"isDropPoint\": false,\n      \"points\": [\n        {\n          \"subLocation\": \"Electronic City\",\n          \"address\": \"Electronic City Phase 1, Bangalore\",\n          \"latitude\": 12.8456,\n          \"longitude\": 77.6603,\n          \"distanceFromStart\": 0,\n          \"timeFromStart\": 0\n        },\n        {\n          \"subLocation\": \"Silk Board\",\n          \"address\": \"Silk Board Junction, Bangalore\",\n          \"latitude\": 12.9176,\n          \"longitude\": 77.6226,\n          \"distanceFromStart\": 12000,\n          \"timeFromStart\": 25\n        },\n        {\n          \"subLocation\": \"Hosur Road\",\n          \"address\": \"Hosur Road, Near Toll Plaza, Bangalore\",\n          \"latitude\": 12.8652,\n          \"longitude\": 77.6753,\n          \"distanceFromStart\": 25000,\n          \"timeFromStart\": 45\n        }\n      ]\n    },\n    {\n      \"city\": \"Chennai\",\n      \"sequenceOrder\": 2,\n      \"isBoardingPoint\": false,\n      \"isDropPoint\": true,\n      \"points\": [\n        {\n          \"subLocation\": \"Tambaram\",\n          \"address\": \"Tambaram Railway Station, Chennai\",\n          \"latitude\": 12.9249,\n          \"longitude\": 80.1000,\n          \"distanceFromStart\": 320000,\n          \"timeFromStart\": 380\n        },\n        {\n          \"subLocation\": \"T Nagar\",\n          \"address\": \"Pondy Bazaar, T Nagar, Chennai\",\n          \"latitude\": 13.0418,\n          \"longitude\": 80.2341,\n          \"distanceFromStart\": 340000,\n          \"timeFromStart\": 405\n        },\n        {\n          \"subLocation\": \"Anna Nagar\",\n          \"address\": \"Anna Nagar Tower, Chennai\",\n          \"latitude\": 13.0850,\n          \"longitude\": 80.2101,\n          \"distanceFromStart\": 350000,\n          \"timeFromStart\": 420\n        }\n      ]\n    }\n  ]\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/drivers/routes",
 							"host": ["{{baseUrl}}"],
 							"path": ["api", "drivers", "routes"]
 						},
-						"description": "Create a route with multiple points. distanceFromStart is in kilometers, timeFromStart is in minutes. Points must be ordered by sequenceOrder."
+						"description": "Step 1: Create a route with cities and stop points (WITHOUT prices). Routes are organized by cities with multiple stop points. Cities are ordered by sequenceOrder. Distance is in meters, time is in minutes. isBoardingPoint and isDropPoint flags are set at CITY LEVEL. After creating the route, use 'Get Route Price Combinations' to see all city combinations, then use 'Set Route Prices' to set prices for each combination."
 					}
 				},
 				{
@@ -180,6 +180,41 @@
 							"path": ["api", "drivers", "{{driverId}}", "routes"]
 						},
 						"description": "Get all routes created by a driver."
+					}
+				},
+				{
+					"name": "Get Route Price Combinations",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/drivers/routes/{{routeId}}/price-combinations",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "drivers", "routes", "{{routeId}}", "price-combinations"]
+						},
+						"description": "Get all possible boarding city to drop city combinations for a route. Shows estimated distance and duration for each combination. Also shows current price if already set (null otherwise). Use this after creating a route to see all combinations that need pricing."
+					}
+				},
+				{
+					"name": "Set Route Prices",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"routeId\": 1,\n  \"prices\": [\n    {\n      \"boardingCity\": \"Bangalore\",\n      \"dropCity\": \"Chennai\",\n      \"price\": 500.0\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/drivers/routes/prices",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "drivers", "routes", "prices"]
+						},
+						"description": "Set prices for all boarding-drop city combinations in a route. Prices are set at CITY LEVEL - all stop points within a boarding city to all stop points within a drop city will have the same price. You can set prices for all combinations at once or one at a time. Existing prices will be replaced."
 					}
 				}
 			]
@@ -199,14 +234,14 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"routeId\": 1,\n  \"vehicleId\": 1,\n  \"driverId\": 1,\n  \"departureTime\": \"2024-12-25T08:00:00\",\n  \"basePricePerKm\": 10.0,\n  \"specialInstructions\": \"Please arrive 10 minutes before departure\"\n}"
+							"raw": "{\n  \"routeId\": 1,\n  \"vehicleId\": 1,\n  \"driverId\": 1,\n  \"departureTime\": \"2024-12-25T08:00:00\",\n  \"specialInstructions\": \"Please arrive 10 minutes before departure\"\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/trips",
 							"host": ["{{baseUrl}}"],
 							"path": ["api", "trips"]
 						},
-						"description": "Schedule a trip on a route."
+						"description": "Schedule a trip on a route. Prices are predefined in the route's price matrix, so no price needs to be specified here."
 					}
 				},
 				{
@@ -388,6 +423,44 @@
 							]
 						},
 						"description": "Get boarding locations with hierarchical structure (city and sub-locations) for a specific city."
+					}
+				},
+				{
+					"name": "Get Trips by Driver ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/trips/driver/{{driverId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "trips", "driver", "{{driverId}}"]
+						},
+						"description": "Get all trips created by a specific driver. Returns trips ordered by departure time (most recent first)."
+					}
+				},
+				{
+					"name": "Get Trip Route Points (For Booking)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/trips/{{tripId}}/route-points?boardingCity=Bangalore&dropCity=Chennai",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "trips", "{{tripId}}", "route-points"],
+							"query": [
+								{
+									"key": "boardingCity",
+									"value": "Bangalore",
+									"description": "Boarding city name"
+								},
+								{
+									"key": "dropCity",
+									"value": "Chennai",
+									"description": "Drop city name"
+								}
+							]
+						},
+						"description": "Get all available stop points (boarding and drop) for a specific trip and city combination. Returns list of stops user can choose from for booking. Also returns the price for this route segment."
 					}
 				}
 			]

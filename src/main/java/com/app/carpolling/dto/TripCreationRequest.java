@@ -24,9 +24,6 @@ public class TripCreationRequest {
     @NotNull(message = "Departure time is required")
     private LocalDateTime departureTime;
     
-    @NotNull(message = "Base price per km is required")
-    private Double basePricePerKm;
-    
     private String specialInstructions;
 }
 

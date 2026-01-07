@@ -92,7 +92,6 @@ CREATE TABLE IF NOT EXISTS trips (
     driver_id BIGINT NOT NULL,
     departure_time TIMESTAMP NOT NULL,
     estimated_arrival_time TIMESTAMP NOT NULL,
-    base_price_per_km DOUBLE PRECISION NOT NULL,
     available_seats INTEGER NOT NULL,
     booked_seats INTEGER NOT NULL DEFAULT 0,
     status VARCHAR(50) NOT NULL DEFAULT 'SCHEDULED' CHECK (status IN ('SCHEDULED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED')),
@@ -153,6 +152,25 @@ CREATE TABLE IF NOT EXISTS booking_seats (
     FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE
 );
 
+-- Route Prices Table (Fixed Pricing Matrix)
+CREATE TABLE IF NOT EXISTS route_prices (
+    id BIGSERIAL PRIMARY KEY,
+    route_id BIGINT NOT NULL,
+    boarding_point_id BIGINT NOT NULL,
+    drop_point_id BIGINT NOT NULL,
+    price DOUBLE PRECISION NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (route_id) REFERENCES routes(id) ON DELETE CASCADE,
+    FOREIGN KEY (boarding_point_id) REFERENCES route_points(id) ON DELETE CASCADE,
+    FOREIGN KEY (drop_point_id) REFERENCES route_points(id) ON DELETE CASCADE,
+    UNIQUE (route_id, boarding_point_id, drop_point_id)
+);
+
+-- Indexes for route_prices
+CREATE INDEX IF NOT EXISTS idx_route_price_route ON route_prices(route_id);
+CREATE INDEX IF NOT EXISTS idx_route_price_boarding ON route_prices(boarding_point_id);
+CREATE INDEX IF NOT EXISTS idx_route_price_drop ON route_prices(drop_point_id);
+
 -- Payments Table
 CREATE TABLE IF NOT EXISTS payments (
     id BIGSERIAL PRIMARY KEY,
@@ -187,7 +205,6 @@ SELECT
     t.departure_time,
     t.estimated_arrival_time,
     t.available_seats,
-    t.base_price_per_km,
     t.status
 FROM trips t
 JOIN routes r ON t.route_id = r.id

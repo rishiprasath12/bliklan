@@ -7,6 +7,7 @@ import com.app.carpolling.exception.BaseException;
 import com.app.carpolling.exception.ErrorCode;
 import com.app.carpolling.repository.BookingRepository;
 import com.app.carpolling.repository.RoutePointRepository;
+import com.app.carpolling.repository.RoutePriceRepository;
 import com.app.carpolling.repository.TripSeatRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,7 @@ public class BookingService {
     private final BookingRepository bookingRepository;
     private final TripSeatRepository tripSeatRepository;
     private final RoutePointRepository routePointRepository;
+    private final RoutePriceRepository routePriceRepository;
     private final UserService userService;
     private final TripService tripService;
     
@@ -63,9 +65,19 @@ public class BookingService {
             tripSeatRepository.save(seat);
         }
         
-        // Calculate distance and price
+        // Get fixed price from route price matrix
+        RoutePrice routePrice = routePriceRepository.findByRouteAndPoints(
+            trip.getRoute().getId(),
+            boardingPoint.getId(),
+            dropPoint.getId()
+        ).orElseThrow(() -> new BaseException(ErrorCode.PRICE_NOT_FOUND, 
+            "Price not configured for this boarding-drop combination"));
+        
+        // Calculate distance (for reference)
         double distance = (dropPoint.getDistanceFromStart() - boardingPoint.getDistanceFromStart()) / 1000.0;
-        double pricePerSeat = distance * trip.getBasePricePerKm();
+        
+        // Calculate total amount
+        double pricePerSeat = routePrice.getPrice();
         double totalAmount = pricePerSeat * request.getSeatNumbers().size();
         
         // Update trip available seats
