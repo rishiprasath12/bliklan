@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface RoutePointRepository extends JpaRepository<RoutePoint, Long> {
@@ -94,5 +95,24 @@ public interface RoutePointRepository extends JpaRepository<RoutePoint, Long> {
            "WHERE rp.route.id = :routeId AND rp.isDropPoint = true " +
            "ORDER BY rp.sequenceOrder")
     List<RoutePoint> findDropPointsByRoute(@Param("routeId") Long routeId);
+    
+    List<RoutePoint> findByRouteIdAndIsBoardingPointTrue(Long routeId);
+    
+    List<RoutePoint> findByRouteIdAndIsDropPointTrue(Long routeId);
+    
+    @Query("SELECT rp FROM RoutePoint rp WHERE rp.route.id = :routeId AND rp.city = :city")
+    List<RoutePoint> findByRouteIdAndCity(@Param("routeId") Long routeId, @Param("city") String city);
+    
+    @Query("SELECT rp FROM RoutePoint rp WHERE rp.route.id = :routeId " +
+           "AND rp.city = :city AND rp.subLocation = :subLocation AND rp.isBoardingPoint = true")
+    Optional<RoutePoint> findBoardingPoint(@Param("routeId") Long routeId, 
+                                           @Param("city") String city, 
+                                           @Param("subLocation") String subLocation);
+    
+    @Query("SELECT rp FROM RoutePoint rp WHERE rp.route.id = :routeId " +
+           "AND rp.city = :city AND rp.subLocation = :subLocation AND rp.isDropPoint = true")
+    Optional<RoutePoint> findDropPoint(@Param("routeId") Long routeId, 
+                                       @Param("city") String city, 
+                                       @Param("subLocation") String subLocation);
 }
 

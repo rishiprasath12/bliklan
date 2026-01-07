@@ -9,7 +9,9 @@ import com.app.carpolling.repository.BookingRepository;
 import com.app.carpolling.repository.RoutePointRepository;
 import com.app.carpolling.repository.RoutePriceRepository;
 import com.app.carpolling.repository.TripSeatRepository;
+import com.app.carpolling.repository.TripRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,20 +28,35 @@ public class BookingService {
     private final TripSeatRepository tripSeatRepository;
     private final RoutePointRepository routePointRepository;
     private final RoutePriceRepository routePriceRepository;
+    private final TripRepository tripRepository;
     private final UserService userService;
     private final TripService tripService;
+    
+    @Value("${booking.expiration.minutes:15}")
+    private int bookingExpirationMinutes;
     
     @Transactional
     public Booking createBooking(BookingRequest request) {
         // Get dependencies
         User user = userService.getUserById(request.getUserId());
         Trip trip = tripService.getTripById(request.getTripId());
+        Long routeId = trip.getRoute().getId();
         
-        RoutePoint boardingPoint = routePointRepository.findById(request.getBoardingPointId())
-            .orElseThrow(() -> new BaseException(ErrorCode.BOARDING_POINT_NOT_FOUND));
+        // Find boarding point by city and sub-location
+        RoutePoint boardingPoint = routePointRepository.findBoardingPoint(
+            routeId, 
+            request.getBoardingCity(), 
+            request.getBoardingSubLocation()
+        ).orElseThrow(() -> new BaseException(ErrorCode.BOARDING_POINT_NOT_FOUND, 
+            "Boarding point not found: " + request.getBoardingCity() + " - " + request.getBoardingSubLocation()));
         
-        RoutePoint dropPoint = routePointRepository.findById(request.getDropPointId())
-            .orElseThrow(() -> new BaseException(ErrorCode.DROP_POINT_NOT_FOUND));
+        // Find drop point by city and sub-location
+        RoutePoint dropPoint = routePointRepository.findDropPoint(
+            routeId,
+            request.getDropCity(),
+            request.getDropSubLocation()
+        ).orElseThrow(() -> new BaseException(ErrorCode.DROP_POINT_NOT_FOUND,
+            "Drop point not found: " + request.getDropCity() + " - " + request.getDropSubLocation()));
         
         // Validate trip is scheduled
         if (trip.getStatus() != TripStatus.SCHEDULED) {
@@ -98,6 +115,8 @@ public class BookingService {
         booking.setStatus(BookingStatus.PENDING);
         booking.setPassengerNames(request.getPassengerNames());
         booking.setPassengerContacts(request.getPassengerContacts());
+        // Set expiration time (configurable, default 15 minutes from now)
+        booking.setExpiresAt(LocalDateTime.now().plusMinutes(bookingExpirationMinutes));
         
         return bookingRepository.save(booking);
     }
@@ -126,6 +145,19 @@ public class BookingService {
         }
         
         // Release seats
+        releaseSeats(booking);
+        
+        booking.setStatus(BookingStatus.CANCELLED);
+        return bookingRepository.save(booking);
+    }
+    
+    /**
+     * Release seats back to the trip inventory
+     * Used when booking is cancelled or expires
+     */
+    @Transactional
+    public void releaseSeats(Booking booking) {
+        // Release individual seats
         for (String seatNumber : booking.getSeatNumbers()) {
             TripSeat seat = tripSeatRepository.findByTripIdAndSeatNumber(
                 booking.getTrip().getId(), seatNumber
@@ -135,13 +167,11 @@ public class BookingService {
             tripSeatRepository.save(seat);
         }
         
-        // Update trip available seats
+        // Update trip available seats count
         Trip trip = booking.getTrip();
         trip.setAvailableSeats(trip.getAvailableSeats() + booking.getNumberOfSeats());
         trip.setBookedSeats(trip.getBookedSeats() - booking.getNumberOfSeats());
-        
-        booking.setStatus(BookingStatus.CANCELLED);
-        return bookingRepository.save(booking);
+        tripRepository.save(trip);
     }
     
     @Transactional(readOnly = true)

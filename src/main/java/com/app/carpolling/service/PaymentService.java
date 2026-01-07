@@ -8,7 +8,6 @@ import com.app.carpolling.entity.PaymentStatus;
 import com.app.carpolling.exception.BaseException;
 import com.app.carpolling.exception.ErrorCode;
 import com.app.carpolling.repository.PaymentRepository;
-import com.razorpay.Order;
 import com.razorpay.RazorpayClient;
 import com.razorpay.RazorpayException;
 import lombok.RequiredArgsConstructor;
@@ -49,7 +48,7 @@ public class PaymentService {
         JSONObject orderRequest = new JSONObject();
         orderRequest.put("amount", booking.getTotalAmount() * 100);
         orderRequest.put("currency", "INR");
-        Order order = razorpay.orders.create(orderRequest);
+        razorpay.orders.create(orderRequest);
         
         // Create payment
         Payment payment = new Payment();
@@ -74,6 +73,9 @@ public class PaymentService {
         } else {
             savedPayment.setStatus(PaymentStatus.FAILED);
             savedPayment.setFailureReason("Payment gateway error");
+            
+            // Release seats and cancel booking on payment failure
+            bookingService.cancelBooking(booking.getId());
         }
         
         return paymentRepository.save(savedPayment);

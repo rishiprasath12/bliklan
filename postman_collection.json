@@ -480,14 +480,14 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"userId\": 1,\n  \"tripId\": 1,\n  \"boardingPointId\": 1,\n  \"dropPointId\": 3,\n  \"seatNumbers\": [\"S1\", \"S2\"],\n  \"passengerNames\": \"John Doe, Jane Doe\",\n  \"passengerContacts\": \"9876543210, 9876543211\"\n}"
+							"raw": "{\n  \"userId\": 1,\n  \"tripId\": 1,\n  \"boardingCity\": \"Bangalore\",\n  \"boardingSubLocation\": \"Silk Board\",\n  \"dropCity\": \"Chennai\",\n  \"dropSubLocation\": \"T Nagar\",\n  \"seatNumbers\": [\"S1\", \"S2\"],\n  \"passengerNames\": \"John Doe, Jane Doe\",\n  \"passengerContacts\": \"9876543210, 9876543211\"\n}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/api/bookings",
 							"host": ["{{baseUrl}}"],
 							"path": ["api", "bookings"]
 						},
-						"description": "Book seats on a trip."
+						"description": "Book seats on a trip. User must specify the exact boarding city and sub-location (stop point) where they want to board, and the exact drop city and sub-location where they want to be dropped. The system will find the matching route points and calculate the price based on the city-to-city combination."
 					}
 				},
 				{

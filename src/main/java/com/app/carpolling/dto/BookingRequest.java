@@ -1,5 +1,6 @@
 package com.app.carpolling.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -19,11 +20,17 @@ public class BookingRequest {
     @NotNull(message = "Trip ID is required")
     private Long tripId;
     
-    @NotNull(message = "Boarding point ID is required")
-    private Long boardingPointId;
+    @NotBlank(message = "Boarding city is required")
+    private String boardingCity; // e.g., "Bangalore"
     
-    @NotNull(message = "Drop point ID is required")
-    private Long dropPointId;
+    @NotBlank(message = "Boarding sub-location is required")
+    private String boardingSubLocation; // e.g., "Silk Board"
+    
+    @NotBlank(message = "Drop city is required")
+    private String dropCity; // e.g., "Chennai"
+    
+    @NotBlank(message = "Drop sub-location is required")
+    private String dropSubLocation; // e.g., "T Nagar"
     
     @NotEmpty(message = "Seat numbers are required")
     private List<String> seatNumbers;

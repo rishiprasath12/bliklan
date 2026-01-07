@@ -70,6 +70,9 @@ public class Booking {
     @Column(columnDefinition = "TEXT")
     private String passengerContacts; // JSON or comma-separated
     
+    @Column(nullable = false)
+    private LocalDateTime expiresAt; // When the pending booking expires (e.g., 15 minutes from creation)
+    
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

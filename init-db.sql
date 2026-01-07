@@ -132,6 +132,7 @@ CREATE TABLE IF NOT EXISTS bookings (
     status VARCHAR(50) NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'CONFIRMED', 'CANCELLED', 'COMPLETED', 'REFUNDED')),
     passenger_names TEXT,
     passenger_contacts TEXT,
+    expires_at TIMESTAMP NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -144,6 +145,8 @@ CREATE TABLE IF NOT EXISTS bookings (
 CREATE INDEX IF NOT EXISTS idx_booking_user ON bookings(user_id);
 CREATE INDEX IF NOT EXISTS idx_booking_trip ON bookings(trip_id);
 CREATE INDEX IF NOT EXISTS idx_booking_status ON bookings(status);
+CREATE INDEX IF NOT EXISTS idx_booking_expires_at ON bookings(expires_at);
+CREATE INDEX IF NOT EXISTS idx_booking_status_expires ON bookings(status, expires_at);
 
 -- Booking Seats Table
 CREATE TABLE IF NOT EXISTS booking_seats (
