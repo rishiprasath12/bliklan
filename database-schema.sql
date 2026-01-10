@@ -191,6 +191,19 @@ VALUES ('John Doe', '9876543210', '$2a$10$encrypted_password_here', 'PASSENGER')
 INSERT INTO users (name, phone, password, role) 
 VALUES ('Jane Smith', '9876543211', '$2a$10$encrypted_password_here', 'DRIVER');
 
+-- Invalidated Tokens Table (for logout functionality and token blacklisting)
+CREATE TABLE invalidated_tokens (
+    id BIGSERIAL PRIMARY KEY,
+    token VARCHAR(500) NOT NULL UNIQUE,
+    phone_number VARCHAR(15) NOT NULL,
+    invalidated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP NOT NULL
+);
+
+-- Indexes for invalidated_tokens
+CREATE INDEX idx_invalidated_token ON invalidated_tokens(token);
+CREATE INDEX idx_invalidated_expires_at ON invalidated_tokens(expires_at);
+  
 -- Database Optimization Notes:
 -- 1. All foreign keys have ON DELETE CASCADE for referential integrity
 -- 2. Indexes created on frequently queried columns (dates, status, user_id, trip_id)

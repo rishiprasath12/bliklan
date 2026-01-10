@@ -50,7 +50,25 @@
 							"host": ["{{baseUrl}}"],
 							"path": ["api", "users", "login"]
 						},
-						"description": "Authenticate user using phone number. Login is phone-based only. Phone number must be 10 digits. Returns an AuthResponse containing a JWT token."
+						"description": "Authenticate user using phone number. Login is phone-based only. Phone number must be 10 digits. Returns an AuthResponse containing a JWT token. Also sets JWT cookie in response."
+					}
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/logout",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "users", "logout"]
+						},
+						"description": "Logout user by clearing JWT cookie, adding token to blacklist, and clearing security context. This will: 1) Add the JWT token to the blacklist database (truly invalidating it), 2) Expire the JWT cookie immediately, 3) Clear the authentication session. After logout, the token cannot be used even if someone has a copy of it."
 					}
 				},
 				{

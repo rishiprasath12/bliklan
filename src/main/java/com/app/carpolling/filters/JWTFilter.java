@@ -1,5 +1,6 @@
 package com.app.carpolling.filters;
 
+import com.app.carpolling.service.TokenBlacklistService;
 import com.app.carpolling.utils.JWTUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -26,6 +27,9 @@ public class JWTFilter extends OncePerRequestFilter {
 
   @Autowired
   private JWTUtils jwtUtils;
+  
+  @Autowired
+  private TokenBlacklistService tokenBlacklistService;
 
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
@@ -107,6 +111,13 @@ public class JWTFilter extends OncePerRequestFilter {
 
     // Token validation
     try {
+      // Check if token is blacklisted
+      if (tokenBlacklistService.isTokenBlacklisted(token)) {
+        logger.warn("Token is blacklisted (user logged out) from {} for request to: {}", tokenSource, requestURI);
+        filterChain.doFilter(request, response);
+        return;
+      }
+      
       if (jwtUtils.validateToken(token)) {
         logger.debug("JWT token validation successful from {} for request to: {}", tokenSource, requestURI);
         

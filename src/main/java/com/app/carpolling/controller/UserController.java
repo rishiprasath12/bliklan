@@ -5,8 +5,10 @@ import com.app.carpolling.dto.AuthResponse;
 import com.app.carpolling.dto.LoginRequest;
 import com.app.carpolling.dto.UserDetailsResponse;
 import com.app.carpolling.dto.UserRegistrationRequest;
+import com.app.carpolling.service.TokenBlacklistService;
 import com.app.carpolling.service.UserService;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     
     private final UserService userService;
+    private final TokenBlacklistService tokenBlacklistService;
     
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<AuthResponse>> registerUser(
@@ -60,6 +63,58 @@ public class UserController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(ApiResponse.error(e.getMessage()));
+        }
+    }
+    
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<String>> logout(
+        HttpServletRequest httpServletRequest,
+        HttpServletResponse httpServletResponse
+    ) {
+        try {
+            String token = null;
+            
+            // Try to get token from cookie first
+            Cookie[] cookies = httpServletRequest.getCookies();
+            if (cookies != null) {
+                for (Cookie cookie : cookies) {
+                    if ("jwt".equals(cookie.getName())) {
+                        token = cookie.getValue();
+                        break;
+                    }
+                }
+            }
+            
+            // If no token in cookie, try Authorization header
+            if (token == null) {
+                String authHeader = httpServletRequest.getHeader("Authorization");
+                if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                    token = authHeader.substring(7);
+                }
+            }
+            
+            // Add token to blacklist if found
+            if (token != null && !token.trim().isEmpty()) {
+                tokenBlacklistService.invalidateToken(token);
+            }
+            
+            // Clear JWT cookie by setting it to null and maxAge to 0
+            Cookie jwtCookie = new Cookie("jwt", null);
+            jwtCookie.setHttpOnly(true);
+            jwtCookie.setSecure(false);   // Set to true in production with HTTPS
+            jwtCookie.setPath("/");
+            jwtCookie.setMaxAge(0);       // Expire cookie immediately
+            
+            // Add expired cookie to response
+            httpServletResponse.addCookie(jwtCookie);
+            
+            // Clear security context
+            SecurityContextHolder.clearContext();
+            
+            return ResponseEntity.ok(ApiResponse.success("Logout successful", null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Logout failed: " + e.getMessage()));
         }
     }
     
