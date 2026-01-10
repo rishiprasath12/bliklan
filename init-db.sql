@@ -178,9 +178,10 @@ CREATE INDEX IF NOT EXISTS idx_route_price_drop ON route_prices(drop_point_id);
 CREATE TABLE IF NOT EXISTS payments (
     id BIGSERIAL PRIMARY KEY,
     transaction_id VARCHAR(100) NOT NULL UNIQUE,
+    razorpay_order_id VARCHAR(100) UNIQUE,
+    razorpay_payment_id VARCHAR(100),
     booking_id BIGINT NOT NULL UNIQUE,
     amount DOUBLE PRECISION NOT NULL,
-    payment_method VARCHAR(50) NOT NULL CHECK (payment_method IN ('CREDIT_CARD', 'DEBIT_CARD', 'UPI', 'NET_BANKING', 'WALLET')),
     status VARCHAR(50) NOT NULL DEFAULT 'INITIATED' CHECK (status IN ('INITIATED', 'SUCCESS', 'FAILED', 'REFUNDED', 'PENDING')),
     payment_gateway_response TEXT,
     paid_at TIMESTAMP,
@@ -193,6 +194,7 @@ CREATE TABLE IF NOT EXISTS payments (
 -- Indexes for payments
 CREATE INDEX IF NOT EXISTS idx_payment_booking ON payments(booking_id);
 CREATE INDEX IF NOT EXISTS idx_payment_status ON payments(status);
+CREATE INDEX IF NOT EXISTS idx_payment_razorpay_order ON payments(razorpay_order_id);
 
 -- Invalidated Tokens Table (for logout functionality and token blacklisting)
 CREATE TABLE IF NOT EXISTS invalidated_tokens (

@@ -553,7 +553,7 @@
 			"name": "Payment Management",
 			"item": [
 				{
-					"name": "Process Payment",
+					"name": "Create Razorpay Order",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -564,14 +564,49 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"bookingId\": 1,\n  \"paymentMethod\": \"UPI\",\n  \"cardDetails\": \"encrypted_payment_details\"\n}"
+							"raw": "{\n  \"bookingId\": 1\n}"
 						},
 						"url": {
-							"raw": "{{baseUrl}}/api/payments/process",
+							"raw": "{{baseUrl}}/api/payments/create-order",
 							"host": ["{{baseUrl}}"],
-							"path": ["api", "payments", "process"]
+							"path": ["api", "payments", "create-order"]
 						},
-						"description": "Process payment for a booking. Payment Methods: CREDIT_CARD, DEBIT_CARD, UPI, NET_BANKING, WALLET. On successful payment, booking status automatically changes to CONFIRMED."
+						"description": "Creates a Razorpay order for a booking. Returns the Razorpay order details (order ID, amount in paise, currency, status) and payment ID. Use the returned order details to initialize Razorpay checkout on the frontend. Save the paymentId for use in the payment-callback endpoint."
+					}
+				},
+				{
+					"name": "Payment Callback (Verify Payment)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"razorpayOrderId\": \"order_ABC123XYZ\",\n  \"razorpayPaymentId\": \"pay_DEF456UVW\",\n  \"razorpaySignature\": \"signature_from_razorpay_checkout\",\n  \"paymentId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/payments/payment-callback",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "payments", "payment-callback"]
+						},
+						"description": "Verify Razorpay payment after checkout completion. This endpoint verifies the payment signature using Razorpay Utils. On successful verification: payment status is set to SUCCESS, booking is confirmed. On failed verification: payment status is set to FAILED, booking is cancelled. Returns the updated payment details."
+					}
+				},
+				{
+					"name": "Get Payment by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/payments/{{paymentId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "payments", "{{paymentId}}"]
+						},
+						"description": "Get payment details by payment ID."
 					}
 				},
 				{
@@ -802,6 +837,12 @@
 			"key": "vehicleId",
 			"value": "1",
 			"type": "string"
+		},
+		{
+			"key": "paymentId",
+			"value": "1",
+			"type": "string",
+			"description": "Payment ID returned from create-order endpoint"
 		}
 	]
 }

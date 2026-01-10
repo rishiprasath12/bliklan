@@ -28,6 +28,12 @@ public class Payment {
     @Column(nullable = false, unique = true)
     private String transactionId;
     
+    @Column(unique = true)
+    private String razorpayOrderId;
+    
+    @Column
+    private String razorpayPaymentId;
+    
     @OneToOne
     @JoinColumn(name = "booking_id", nullable = false, unique = true)
     private Booking booking;

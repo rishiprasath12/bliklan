@@ -1,6 +1,8 @@
 package com.app.carpolling.controller;
 
 import com.app.carpolling.dto.ApiResponse;
+import com.app.carpolling.dto.PaymentCallbackRequest;
+import com.app.carpolling.dto.PaymentOrderResponse;
 import com.app.carpolling.dto.PaymentRequest;
 import com.app.carpolling.entity.Payment;
 import com.app.carpolling.service.PaymentService;
@@ -18,19 +20,44 @@ public class PaymentController {
     
     private final PaymentService paymentService;
     
-    @PostMapping("/process")
-    public ResponseEntity<ApiResponse<Payment>> processPayment(
+    /**
+     * Creates a Razorpay order for the given booking
+     * @param request PaymentRequest containing booking ID
+     * @return Razorpay order response as JSON string
+     */
+    @PostMapping("/create-order")
+    public ResponseEntity<ApiResponse<PaymentOrderResponse>> createOrder(
         @Valid @RequestBody PaymentRequest request
     ) {
         try {
-            Payment payment = paymentService.processPayment(request);
+            PaymentOrderResponse orderResponse = paymentService.createOrder(request);
+            return ResponseEntity.ok(
+                ApiResponse.success("Razorpay order created successfully", orderResponse)
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error(e.getMessage()));
+        }
+    }
+    
+    /**
+     * Payment callback endpoint to verify Razorpay payment
+     * @param callbackRequest PaymentCallbackRequest containing Razorpay payment details
+     * @return Updated Payment entity
+     */
+    @PostMapping("/payment-callback")
+    public ResponseEntity<ApiResponse<Payment>> paymentCallback(
+        @Valid @RequestBody PaymentCallbackRequest callbackRequest
+    ) {
+        try {
+            Payment payment = paymentService.verifyPayment(callbackRequest);
             if (payment.getStatus().toString().equals("SUCCESS")) {
                 return ResponseEntity.ok(
-                    ApiResponse.success("Payment processed successfully", payment)
+                    ApiResponse.success("Payment verified successfully", payment)
                 );
             } else {
                 return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED)
-                    .body(ApiResponse.error("Payment failed: " + payment.getFailureReason()));
+                    .body(ApiResponse.error("Payment verification failed: " + payment.getFailureReason()));
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -59,6 +86,21 @@ public class PaymentController {
     ) {
         try {
             Payment payment = paymentService.getPaymentByTransactionId(transactionId);
+            return ResponseEntity.ok(
+                ApiResponse.success("Payment retrieved successfully", payment)
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiResponse.error(e.getMessage()));
+        }
+    }
+    
+    @GetMapping("/{paymentId}")
+    public ResponseEntity<ApiResponse<Payment>> getPaymentById(
+        @PathVariable Long paymentId
+    ) {
+        try {
+            Payment payment = paymentService.getPaymentById(paymentId);
             return ResponseEntity.ok(
                 ApiResponse.success("Payment retrieved successfully", payment)
             );

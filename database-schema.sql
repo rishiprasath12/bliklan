@@ -165,9 +165,10 @@ CREATE TABLE booking_seats (
 CREATE TABLE payments (
     id BIGSERIAL PRIMARY KEY,
     transaction_id VARCHAR(100) NOT NULL UNIQUE,
+    razorpay_order_id VARCHAR(100) UNIQUE,
+    razorpay_payment_id VARCHAR(100),
     booking_id BIGINT NOT NULL UNIQUE,
     amount DOUBLE PRECISION NOT NULL,
-    payment_method VARCHAR(50) NOT NULL CHECK (payment_method IN ('CREDIT_CARD', 'DEBIT_CARD', 'UPI', 'NET_BANKING', 'WALLET')),
     status VARCHAR(50) NOT NULL DEFAULT 'INITIATED' CHECK (status IN ('INITIATED', 'SUCCESS', 'FAILED', 'REFUNDED', 'PENDING')),
     payment_gateway_response TEXT,
     paid_at TIMESTAMP,
@@ -180,6 +181,7 @@ CREATE TABLE payments (
 -- Create indexes for payments table
 CREATE INDEX idx_payment_booking ON payments(booking_id);
 CREATE INDEX idx_payment_status ON payments(status);
+CREATE INDEX idx_payment_razorpay_order ON payments(razorpay_order_id);
 
 -- Sample Data Insertion (Optional)
 

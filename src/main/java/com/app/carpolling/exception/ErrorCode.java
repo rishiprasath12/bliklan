@@ -52,6 +52,7 @@ public enum ErrorCode {
     
     // 422 - Unprocessable Entity (Business Logic Failures)
     PAYMENT_FAILED(422, "Payment processing failed"),
+    PAYMENT_VERIFICATION_FAILED(422, "Payment verification failed"),
     
     // 429 - Too Many Requests (Rate Limiting)
     TOO_MANY_REQUESTS(429, "Too many requests, please try again later"),
