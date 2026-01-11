@@ -15,4 +15,5 @@ public class PaymentOrderResponse {
 
     private Long paymentId;
     private Map<String, Object> order; // Razorpay order details as a Map
+    private String publicKey;
 }

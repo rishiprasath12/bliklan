@@ -88,6 +88,7 @@ public class PaymentService {
         return PaymentOrderResponse.builder()
                 .paymentId(savedPayment.getId())
                 .order(orderMap)
+                .publicKey(KEY_ID)
                 .build();
     }
 
