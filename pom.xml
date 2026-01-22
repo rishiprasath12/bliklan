@@ -126,6 +126,18 @@
 		<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
 		<version>2.3.0</version>
 	</dependency>
+
+	<!-- WebSocket with STOMP -->
+	<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-websocket</artifactId>
+	</dependency>
+
+	<!-- Redis for caching driver locations -->
+	<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-data-redis</artifactId>
+	</dependency>
 </dependencies>
 
 	<build>
