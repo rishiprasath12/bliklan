@@ -19,6 +19,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     
     // Find expired pending bookings
     List<Booking> findByStatusAndExpiresAtBefore(BookingStatus status, LocalDateTime expiresAt);
+
+    // Check if user has a booking for a trip (for live location access)
+    boolean existsByUser_IdAndTrip_Id(Long userId, Long tripId);
 }
 
 

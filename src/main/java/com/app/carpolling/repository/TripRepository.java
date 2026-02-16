@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface TripRepository extends JpaRepository<Trip, Long> {
@@ -29,6 +30,8 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
     );
     
     List<Trip> findByStatusAndDepartureTimeBefore(TripStatus status, LocalDateTime dateTime);
+
+    Optional<Trip> findByIdAndDriver_Id(Long tripId, Long driverId);
 }
 
 

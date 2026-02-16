@@ -1,26 +1,29 @@
 package com.app.carpolling.dto;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.io.Serializable;
-import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class DriverLocationDto implements Serializable {
-    
-    private Long driverId;
+public class DriverLocationDto {
+
+    @NotNull(message = "Trip ID is required")
     private Long tripId;
+
+    @NotNull(message = "Latitude is required")
+    @Min(value = -90, message = "Latitude must be between -90 and 90")
+    @Max(value = 90, message = "Latitude must be between -90 and 90")
     private Double latitude;
+
+    @NotNull(message = "Longitude is required")
+    @Min(value = -180, message = "Longitude must be between -180 and 180")
+    @Max(value = 180, message = "Longitude must be between -180 and 180")
     private Double longitude;
-    private Double heading;        // Direction in degrees (0-360)
-    private Double speed;          // Speed in km/h
-    private Double accuracy;       // GPS accuracy in meters
-    private LocalDateTime timestamp;
-    private String status;         // MOVING, STOPPED, ARRIVED
+
+    private Long timestamp; // Optional: client timestamp for ordering
 }

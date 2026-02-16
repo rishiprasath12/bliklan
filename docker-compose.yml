@@ -20,6 +20,20 @@ services:
       timeout: 5s
       retries: 5
 
+  # Redis (for live driver location)
+  redis:
+    image: redis:7-alpine
+    container_name: carpolling-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - carpolling-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # Spring Boot Application
   app:
     build:
@@ -29,11 +43,15 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/carpolling_db
       SPRING_DATASOURCE_USERNAME: admin
       SPRING_DATASOURCE_PASSWORD: admin
       SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
     ports:
       - "8010:8010"
     networks:

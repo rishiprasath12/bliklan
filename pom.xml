@@ -127,13 +127,13 @@
 		<version>2.3.0</version>
 	</dependency>
 
-	<!-- WebSocket with STOMP -->
+	<!-- WebSocket (STOMP over SockJS) -->
 	<dependency>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-websocket</artifactId>
 	</dependency>
 
-	<!-- Redis for caching driver locations -->
+	<!-- Redis for live location storage -->
 	<dependency>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-data-redis</artifactId>

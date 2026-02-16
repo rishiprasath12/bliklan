@@ -2,12 +2,17 @@ package com.app.carpolling.controller;
 
 import com.app.carpolling.dto.*;
 import com.app.carpolling.entity.Trip;
+import com.app.carpolling.entity.User;
+import com.app.carpolling.repository.BookingRepository;
+import com.app.carpolling.repository.UserRepository;
+import com.app.carpolling.service.DriverLocationService;
 import com.app.carpolling.service.RouteService;
 import com.app.carpolling.service.TripService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +25,9 @@ public class TripController {
     
     private final TripService tripService;
     private final RouteService routeService;
+    private final DriverLocationService driverLocationService;
+    private final UserRepository userRepository;
+    private final BookingRepository bookingRepository;
     
     @PostMapping
     public ResponseEntity<ApiResponse<Trip>> createTrip(
@@ -216,6 +224,36 @@ public class TripController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
+    /**
+     * Get latest driver location for a trip.
+     * Customer must have a booking for the trip.
+     */
+    @GetMapping("/{tripId}/driver-location")
+    public ResponseEntity<ApiResponse<DriverLocationResponseDto>> getDriverLocation(
+            @PathVariable Long tripId,
+            Authentication authentication) {
+        try {
+            if (authentication == null || authentication.getPrincipal() == null) {
+                return ResponseEntity.status(401).body(ApiResponse.error("Authentication required"));
+            }
+            String phoneNumber = authentication.getPrincipal().toString();
+            User user = userRepository.findByPhone(phoneNumber).orElse(null);
+            if (user == null) {
+                return ResponseEntity.status(401).body(ApiResponse.error("User not found"));
+            }
+            if (!bookingRepository.existsByUser_IdAndTrip_Id(user.getId(), tripId)) {
+                return ResponseEntity.status(403).body(ApiResponse.error("You do not have access to this trip's driver location"));
+            }
+            DriverLocationResponseDto location = driverLocationService.getLatestLocation(tripId);
+            if (location == null) {
+                return ResponseEntity.ok(ApiResponse.success("No location data yet. Driver may not have started sharing.", null));
+            }
+            return ResponseEntity.ok(ApiResponse.success("Driver location retrieved", location));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error(e.getMessage()));
         }
     }
 }
